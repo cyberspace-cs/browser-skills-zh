@@ -1,0 +1,44 @@
+{
+  "skill_name": "github-issue-triage",
+  "trigger": {
+    "positive": [
+      {
+        "prompt": "给这些 issue 打标签",
+        "top_k": 3
+      },
+      {
+        "prompt": "看看这个 repo 的 open issues",
+        "top_k": 3
+      },
+      {
+        "prompt": "帮我 triage 一下 issue",
+        "top_k": 3
+      }
+    ],
+    "negative": [
+      {
+        "prompt": "帮我审一下这个 PR",
+        "owner": "github-pr-review"
+      },
+      {
+        "prompt": "这周 GitHub 有啥火的",
+        "owner": "github-trending-digest"
+      }
+    ]
+  },
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "帮我 triage 一下 Panniantong/Agent-Reach 的 open issues",
+      "expected_output": "按优先级分类的 issue 摘要报告，带建议标签",
+      "expectations": [
+        "先检查 GITHUB_TOKEN 是否可用",
+        "用 fetch_issues.py 拉 issues，过滤掉 PR",
+        "按 P0/P1/P2/P3 优先级分类",
+        "建议标签但不自动打标签",
+        "识别重复 issue",
+        "stale issue（>90 天）单独标出"
+      ]
+    }
+  ]
+}

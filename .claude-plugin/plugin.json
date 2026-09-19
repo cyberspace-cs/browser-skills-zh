@@ -1,0 +1,12 @@
+{
+  "name": "browser-skills-zh",
+  "version": "0.4.0",
+  "description": "让 AI agent 学会用浏览器干活的中文技能包 · Agent Skills 开放标准 · 跨平台加载",
+  "author": {
+    "name": "cyberspace-cs"
+  },
+  "homepage": "https://github.com/cyberspace-cs/browser-skills-zh",
+  "repository": "https://github.com/cyberspace-cs/browser-skills-zh",
+  "license": "MIT",
+  "skills": "./skills"
+}

@@ -1,0 +1,29 @@
+{
+  "name": "browser-skills-zh",
+  "version": "0.4.0",
+  "description": "让 AI agent 学会用浏览器干活的中文技能包 · 跨平台加载",
+  "author": {
+    "name": "cyberspace-cs",
+    "url": "https://github.com/cyberspace-cs"
+  },
+  "homepage": "https://github.com/cyberspace-cs/browser-skills-zh",
+  "repository": "https://github.com/cyberspace-cs/browser-skills-zh",
+  "license": "MIT",
+  "skills": "./skills/",
+  "interface": {
+    "displayName": "浏览器技能包（中文）",
+    "shortDescription": "让 AI agent 学会用浏览器干活：PR 审查、Trending 日报、表单填写",
+    "longDescription": "面向中文开发者的浏览器操作 Agent Skills，一次编写跨平台加载，默认只读最小权限。",
+    "developerName": "cyberspace-cs",
+    "category": "Productivity",
+    "capabilities": [
+      "Interactive",
+      "Read",
+      "Write"
+    ],
+    "defaultPrompt": [
+      "帮我审一下这个 PR",
+      "这周 GitHub 有啥火的"
+    ]
+  }
+}
