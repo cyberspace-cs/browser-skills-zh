@@ -1,0 +1,10 @@
+{
+  "name": "browser-skills-zh",
+  "version": "0.2.0",
+  "description": "让 AI agent 学会用浏览器干活的中文技能包 · Agent Skills 开放标准 · 跨平台加载",
+  "skills": [
+    "skills/github-pr-review",
+    "skills/github-trending-digest",
+    "skills/browser-form-fill"
+  ]
+}

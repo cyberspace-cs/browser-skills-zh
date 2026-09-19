@@ -1,52 +1,68 @@
 ---
 name: github-pr-review
-description: 打开指定 GitHub Pull Request，阅读 diff，按「架构 / 代码质量 / 安全风险 / 可改进点」四栏输出中文结构化审查意见，并标注是否建议合并。当用户说「审一下这个 PR」「看看这个 PR 改了啥」「帮我 review」「PR #123」时触发。只读，不替用户点 Merge。
+description: |
+  Use when the user asks to review a pull request, audit a diff, or check whether
+  a PR is safe to merge. Triggers on phrases like "审一下这个 PR", "看看 #123",
+  "帮我 review", "PR 改了什么", "is this PR good to merge".
+  Requires a browser backend (Playwright MCP or bsk) OR GITHUB_TOKEN env var for
+  the API script. Read-only: never merge, approve, or comment without explicit
+  user confirmation.
 ---
 
-# GitHub PR 审查
+# github-pr-review
 
-你是一个严格但建设性的代码审查者。目标是**帮用户在合并前发现问题**，不是替用户做决定。
+对一个 GitHub Pull Request 做**严格但建设性**的中文代码审查。目标是帮用户在合并前发现问题，不是替用户做决定。
 
-## 权限边界（必须先读）
+## Before starting（前置检查，必做）
 
-- ✅ 你**只读**：打开 PR、阅读 diff、查看关联 issue/CI 状态。
-- ❌ 你**不做**：点击 Merge、批准、请求修改、留言、改分支、写评论。
-- ✅ 用户在对话中明确说「留言 / 批准 / 合并」时，也只**把要发送的内容写出来给用户确认**，由用户自己点。
+在开始前先确认你有两种路径之一可用：
+
+1. **API 路径（推荐，无需浏览器）**：检查环境变量 `GITHUB_TOKEN`。有就用 `scripts/review_pr.py` 拉结构化数据。
+2. **浏览器路径**：确认浏览器后端在线（Playwright MCP / bsk daemon）。用 `browser_snapshot` 试一下能不能拿到 PR 页。
+
+两条都不可用，**直接告诉用户**「需要 GITHUB_TOKEN 或浏览器后端」，不要硬猜 PR 内容。
+
+## 红线（永远不做）
+
+- ❌ 不点击 Merge / Approve / Request changes
+- ❌ 不替用户在 PR 里写评论
+- ❌ 不读 PR diff 之外的私有内容（密钥、env、cookies）
+- ❌ 用户要「帮我 merge」——把要做的操作写出来给他自己点
 
 ## 工作流
 
 ### 1. 定位 PR
-用户会给一个链接或 `owner/repo#123`。
-- 若是链接，提取 `owner` / `repo` / `number`。
-- 若是 `#123` 且当前目录是 git 仓库，用 `git remote get-url origin` 推断 owner/repo。
+用户给链接或 `owner/repo#123`。
+- 链接 → 提取 owner/repo/number
+- 只给 `#123` 且在 git 仓库里 → `git remote get-url origin` 推断
 
-### 2. 拉取元信息
-优先调用浏览器后端（Playwright MCP / bsk）打开 PR 页；若无浏览器，可用 `scripts/review_pr.py` 拉取结构化数据（需要 `GITHUB_TOKEN` 环境变量）：
+### 2. 拉数据
 
 ```bash
 python scripts/review_pr.py owner repo 123 --out pr-123.json
 ```
 
-脚本输出：标题、作者、变更行数、文件列表、每个文件的 patch、CI 状态、关联 issue 编号。
+输出：标题、作者、+/- 行数、文件列表、每个文件 patch、CI 状态、关联 issue。
 
-### 3. 逐文件审查
-按以下四栏给意见，**每条意见必须指向具体文件 + 行号或函数名**，禁止泛泛而谈：
+### 3. 审查四栏
 
-| 栏 | 看什么 |
-|---|---|
-| **架构** | 是否贴合该仓库的分层？新代码放在对的模块吗？有没有重复造轮子？ |
-| **代码质量** | 命名、边界条件、错误处理、是否有死代码、测试是否覆盖新逻辑 |
-| **安全风险** | 注入、路径穿越、密钥硬编码、权限放宽、`subprocess` shell=True、未校验的外部输入 |
-| **可改进点** | 小问题 + 建议，但不要吹毛求疵；标注「非阻塞」 |
+| 栏 | 看什么 | 例子 |
+|---|---|---|
+| 架构 | 分层对不对、有没有重复造轮子 | 「新工具函数放进了 HTTP handler 里」 |
+| 代码质量 | 边界条件、错误处理、死代码、测试 | 「空 list 没处理」 |
+| 安全 | 注入、路径穿越、密钥、shell=True | 「`subprocess.run(shell=True)`」 |
+| 改进 | 小建议，标注「非阻塞」 | 「可以用 dataclass 替换 dict」 |
+
+每条意见必须指向 **文件:行号或函数名**，禁止「整体不错」这种废话。
 
 ### 4. 输出格式
 
 ```
 ## PR #123 — <标题>
-- 作者 / 变更规模 / CI 状态
+- 作者 / +N/-M / CI 状态
 - 一句话总评：<建议合并 / 建议修改后合并 / 建议打回>
 
-### 🔴 必须改（阻塞合并）
+### 🔴 必须改（阻塞）
 - file.py:42 — 问题 + 为什么 + 怎么改
 
 ### 🟡 建议改（非阻塞）
@@ -56,15 +72,19 @@ python scripts/review_pr.py owner repo 123 --out pr-123.json
 - …
 
 ### 结论
-<一段话：是否建议合并、剩余风险>
+<一段话：剩余风险>
 ```
 
-### 5. 特别规则
-- 新**测试文件**本身只看：断言是否真的断言了行为、有没有 mock 过度。
-- 文档类 PR：看事实是否准确、链接是否死链、术语是否一致。
-- 大 PR（>500 行）：先按模块归类，再挑重点文件看，不要逐行纠缠。
-- 看不懂业务上下文时，**明说**「这部分需要业务背景」，不要硬编。
+## 原则（判断规则）
+
+- **新测试只看断言真不真**：别花时间夸测试写得漂亮，看它有没有真的断言行为、有没有 mock 过度到没意义。
+- **文档 PR 看事实**：查链接死没死、术语一不一致，别评文风。
+- **大 PR 先归类**：>500 行先按模块分组，挑重点文件看，不逐行纠缠。
+- **看不懂就说不懂**：业务上下文缺的时候，明说「这部分需要业务背景」，不要硬编。
+- **CI 失败先看 flaky**：别一见红就说代码有问题，先看是不是已知 flaky test。
 
 ## 何时不该用这个 skill
-- 用户要的是「写 PR 描述」「改 PR 标题」——那是写作任务，不是审查。
-- 用户要合并到生产——提醒这是你个人审查，不是 approver。
+
+- 用户要「写 PR 描述」「改 PR 标题」——写作任务，不是审查
+- 用户要「合并到生产」——提醒你不是 approver
+- 用户要「给作者打分」——这不是代码评审
