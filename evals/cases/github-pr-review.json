@@ -1,0 +1,43 @@
+{
+  "skill_name": "github-pr-review",
+  "trigger": {
+    "positive": [
+      {
+        "prompt": "审一下这个 PR https://github.com/owner/repo/pull/123",
+        "top_k": 3
+      },
+      {
+        "prompt": "看看 #456 改了啥，能不能合并",
+        "top_k": 3
+      },
+      {
+        "prompt": "帮我 review 一下这个 diff",
+        "top_k": 3
+      }
+    ],
+    "negative": [
+      {
+        "prompt": "这周 GitHub 有啥火的",
+        "owner": "github-trending-digest"
+      },
+      {
+        "prompt": "帮我把这张表单填了",
+        "owner": "browser-form-fill"
+      }
+    ]
+  },
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "帮我审一下 Panniantong/Agent-Reach#708 这个 PR，看看能不能合并",
+      "expected_output": "四栏中文审查报告：必须改/建议改/写得好的地方/结论，每条意见带文件:行号",
+      "expectations": [
+        "先检查 GITHUB_TOKEN 或浏览器后端是否可用，不可用时明确告知",
+        "输出分四栏：架构/代码质量/安全/改进，或 🔴/🟡/🟢 分级",
+        "每条意见指向具体文件和位置，不泛泛而谈",
+        "不执行 merge/approve/comment 任何写操作",
+        "看不懂的业务上下文明确说出来，不硬编"
+      ]
+    }
+  ]
+}

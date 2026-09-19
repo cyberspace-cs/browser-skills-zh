@@ -1,0 +1,44 @@
+{
+  "skill_name": "github-trending-digest",
+  "trigger": {
+    "positive": [
+      {
+        "prompt": "这周 GitHub 有啥火的",
+        "top_k": 3
+      },
+      {
+        "prompt": "看看 trending 周报",
+        "top_k": 3
+      },
+      {
+        "prompt": "今日热门开源项目有哪些",
+        "top_k": 3
+      }
+    ],
+    "negative": [
+      {
+        "prompt": "帮我审一下这个 PR",
+        "owner": "github-pr-review"
+      },
+      {
+        "prompt": "帮我填一下这个表单",
+        "owner": "browser-form-fill"
+      }
+    ]
+  },
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "出一份本周 GitHub Trending 中文周报",
+      "expected_output": "按方向分类的中文周报，不是按语言堆列表",
+      "expectations": [
+        "先跑 fetch_trending.py，失败再用浏览器",
+        "按方向（Agent/沙箱/浏览器/写作/其他）分类，不按语言堆",
+        "挑 8-12 个真正有意思的项目，不把 30 个全列",
+        "存疑项目（夸张描述/蹭热点）单独放「存疑」区",
+        "不编 star 数，以脚本抓到的为准",
+        "不 star / 不 follow / 不做任何账号操作"
+      ]
+    }
+  ]
+}
