@@ -52,9 +52,9 @@ def validate(skill_dir: Path) -> list[str]:
     elif len(m_desc.group(1).strip()) > 1024:
         errors.append("description 超过 1024 字符")
 
-    # 正文里必须有权限边界
-    if "权限边界" not in text and "不做" not in text:
-        errors.append("正文缺少权限边界声明")
+    # 正文里必须有权限/红线声明
+    if not any(kw in text for kw in ("权限边界", "红线", "不做", "永远不", "Never")):
+        errors.append("正文缺少权限/红线边界声明")
 
     # 文件夹里不该有 README.md
     if (skill_dir / "README.md").is_file():
